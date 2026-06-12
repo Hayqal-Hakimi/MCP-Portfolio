@@ -154,6 +154,24 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     actions = ["sns:Publish"]
     resources = ["arn:aws:sns:ap-southeast-1:${data.aws_caller_identity.current.account_id}:mcp-portfolio-alerts"]
   }
+
+  # === TOFU READ — untuk plan/apply (semua read-only) ===
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:Get*", "s3:List*",
+      "cloudfront:Get*", "cloudfront:List*",
+      "dynamodb:Describe*", "dynamodb:List*",
+      "iam:Get*", "iam:List*",
+      "logs:Describe*", "logs:List*",
+      "sns:Get*", "sns:List*",
+      "lambda:Get*", "lambda:List*",
+      "events:Describe*", "events:List*",
+      "apigateway:GET",
+      "states:Describe*", "states:List*",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions" {

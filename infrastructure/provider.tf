@@ -1,4 +1,12 @@
 terraform {
+  backend "s3" {
+    bucket         = "hayqal-tfstate-ap-southeast-1"
+    key            = "mcp-portfolio/terraform.tfstate"
+    region         = "ap-southeast-1"
+    dynamodb_table = "hayqal-tfstate-lock"
+    encrypt        = true
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"

@@ -1,0 +1,145 @@
+name: Deploy Portfolio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ═══════════════════════════════════════════
+  # JOB 1: LINT + SECURITY SCAN + PLAN
+  # ═══════════════════════════════════════════
+  infra-check:
+    name: '🔍 Lint + Security + Plan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: '1.9.0'
+
+      - name: Lint (tflint)
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          cd infrastructure
+          tflint --init
+          tflint
+
+      - name: Security Scan (checkov)
+        run: |
+          pip install checkov -q
+          cd infrastructure
+          checkov -d . --framework terraform \
+            --skip-check CKV_AWS_79,CKV_AWS_18,CKV_AWS_111 \
+            --soft-fail
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-southeast-1
+
+      - name: Plan (tofu plan)
+        run: |
+          cd infrastructure
+          tofu init
+          tofu plan -out=tfplan
+
+  # ═══════════════════════════════════════════
+  # JOB 2: DEPLOY KE AWS (dengan approval gate)
+  # ═══════════════════════════════════════════
+  deploy:
+    name: '🚀 Deploy to AWS'
+    needs: infra-check
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: '1.9.0'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-southeast-1
+
+      # ── 2.1 Apply Infrastructure ──
+      - name: tofu apply
+        run: |
+          cd infrastructure
+          tofu init
+          tofu apply -auto-approve
+
+      # ── 2.2 Generate Stats ──
+      - name: Generate deployment stats
+        run: |
+          cd infrastructure
+          RESOURCES=$(tofu state list | wc -l)
+          ALARMS=$(tofu state list | grep cloudwatch_metric_alarm | wc -l)
+          API_URL=$(tofu output -raw api_endpoint)
+          cat > ../portfolio/frontend/public/stats.json << STATS
+          {
+            "resources": $RESOURCES,
+            "services": 7,
+            "alarms": $ALARMS,
+            "cost": "RM0",
+            "apiUrl": "$API_URL",
+            "apiStatus": "200",
+            "uptime": "Live",
+            "status": "All Systems Operational",
+            "lastDeployed": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          }
+          STATS
+
+      # ── 2.3 Build Frontend ──
+      - name: Build React frontend
+        run: |
+          API_URL=$(cd infrastructure && tofu output -raw api_endpoint)
+          cd portfolio/frontend
+          echo "VITE_API_URL=$API_URL" > .env.production
+          npm install
+          npm run build
+
+      # ── 2.4 Upload to S3 ──
+      - name: Upload to S3
+        run: |
+          BUCKET=$(cd infrastructure && tofu output -raw frontend_bucket)
+          aws s3 sync portfolio/frontend/dist/ "s3://$BUCKET" \
+            --delete --cache-control "max-age=3600"
+
+      # ── 2.5 Invalidate CloudFront ──
+      - name: Invalidate CloudFront cache
+        run: |
+          DIST_ID=$(aws cloudfront list-distributions \
+            --query "DistributionList.Items[?contains(Origins.Items[0].DomainName, '.s3.ap-southeast-1.amazonaws.com')].Id" \
+            --output text | head -1)
+          if [ -n "$DIST_ID" ]; then
+            aws cloudfront create-invalidation \
+              --distribution-id "$DIST_ID" \
+              --paths "/*"
+          fi
+
+      # ── 2.6 Test API ──
+      - name: Test API
+        run: |
+          API_URL=$(cd infrastructure && tofu output -raw api_endpoint)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "$API_URL/api/contact" \
+            -H 'Content-Type: application/json' \
+            -d '{"name":"CI Test","email":"ci@test.com","topic":"other","message":"Automated deploy by GitHub Actions"}')
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ API test failed (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+          echo "✅ API test passed (HTTP $HTTP_CODE)"

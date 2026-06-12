@@ -23,6 +23,11 @@ output "frontend_bucket" {
   value       = aws_s3_bucket.frontend.id
 }
 
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID"
+  value       = aws_cloudfront_distribution.frontend.id
+}
+
 output "backup_bucket" {
   description = "S3 bucket for DynamoDB backups"
   value       = aws_s3_bucket.backups.id

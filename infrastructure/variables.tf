@@ -4,12 +4,6 @@ variable "project_name" {
   default     = "mcp-portfolio"
 }
 
-variable "client_name" {
-  description = "Nama klien"
-  type        = string
-  default     = "MCP Solutions"
-}
-
 variable "environment" {
   description = "Environment deployment"
   type        = string

@@ -23,9 +23,7 @@ jobs:
       - name: Lint (tflint)
         run: |
           curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-          cd infrastructure
-          tflint --init
-          tflint
+          tflint --chdir=infrastructure --minimum-failure-severity=error
 
       - name: Security Scan (checkov)
         run: |

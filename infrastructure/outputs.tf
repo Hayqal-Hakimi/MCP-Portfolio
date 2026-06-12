@@ -5,7 +5,7 @@ output "cloudfront_url" {
 
 output "api_endpoint" {
   description = "API Gateway invoke URL (prod stage)"
-  value       = "${aws_api_gateway_stage.prod.invoke_url}"
+  value       = aws_api_gateway_stage.prod.invoke_url
 }
 
 output "api_contacts_endpoint" {

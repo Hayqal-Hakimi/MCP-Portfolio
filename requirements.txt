@@ -1,0 +1,19 @@
+Client: MCP Solutions (Malaysia Cloud Provider)
+Project: DevOps Portfolio Website (Serverless)
+Budget: RM50/bulan (AWS Free Tier — jangan exceed)
+
+architecture: serverless (S3 + CloudFront + Lambda + DynamoDB + API Gateway)
+frontend: React static files di S3, serve guna CloudFront CDN
+backend: Lambda function untuk API (contact form, dynamic data)
+database: DynamoDB (NoSQL) untuk contact form entries
+api: API Gateway route /api/* ke Lambda
+domain: DevopsQ-Portfolio.my
+ssl: AWS ACM + CloudFront auto-SSL
+cdn: CloudFront, origin S3 + API Gateway
+backup: DynamoDB export ke S3 setiap minggu guna Lambda scheduler
+alert-email: hayqal.dev@gmail.com
+scaling: auto (serverless — tak perlu manual scaling)
+
+notes: AWS Free Tier sahaja. Semua region ap-southeast-1 (Singapore).
+Serverless semua — zero EC2. S3 static hosting + CloudFront.
+Security group tak perlu (semua managed service).

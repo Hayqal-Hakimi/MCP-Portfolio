@@ -1,0 +1,37 @@
+# Terraform state & lock
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.*
+*.lock.hcl
+
+# Secrets (ada email)
+terraform.tfvars
+*.auto.tfvars
+.env
+.env.*
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Lambda artifacts
+*.zip
+
+# Design (generated)
+stitch_*/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# AgentQ reports (generated, not source)
+*_report*.md
+cost_estimate.md
+security_report.md

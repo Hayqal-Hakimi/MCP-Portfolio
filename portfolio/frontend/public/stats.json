@@ -1,0 +1,11 @@
+{
+  "resources": 49,
+  "services": 7,
+  "alarms": 6,
+  "cost": "RM0",
+  "apiUrl": "https://dh6loqty5c.execute-api.ap-southeast-1.amazonaws.com/prod",
+  "apiStatus": "200",
+  "uptime": "Live",
+  "status": "All Systems Operational",
+  "lastDeployed": "2026-06-12T00:24:48Z"
+}

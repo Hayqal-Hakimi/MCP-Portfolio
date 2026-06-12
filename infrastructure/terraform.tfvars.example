@@ -1,0 +1,13 @@
+# ─────────────────────────────────────
+# MCP Portfolio — Example Variables
+# Copy to terraform.tfvars, fill your values
+# ─────────────────────────────────────
+
+project_name      = "mcp-portfolio"
+client_name       = "MCP Solutions"
+environment       = "production"
+aws_region        = "ap-southeast-1"
+email_alert       = "your-email@gmail.com"
+frontend_bucket_name = "mcp-portfolio-frontend"
+backup_bucket_name   = "mcp-portfolio-dynamodb-backups"
+dynamodb_table_name  = "mcp-portfolio-data"

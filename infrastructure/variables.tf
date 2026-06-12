@@ -19,7 +19,7 @@ variable "aws_region" {
 variable "email_alert" {
   description = "Email untuk alert monitoring"
   type        = string
-  default     = "hayqal.dev@gmail.com"
+  default     = "hayqalhakimimain@gmail.com"
 }
 
 variable "frontend_bucket_name" {

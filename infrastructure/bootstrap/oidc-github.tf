@@ -164,6 +164,7 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "dynamodb:Describe*", "dynamodb:List*",
       "iam:Get*", "iam:List*",
       "logs:Describe*", "logs:List*",
+      "cloudwatch:Describe*", "cloudwatch:List*", "cloudwatch:Get*",
       "sns:Get*", "sns:List*",
       "lambda:Get*", "lambda:List*",
       "events:Describe*", "events:List*",

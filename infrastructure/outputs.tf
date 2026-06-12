@@ -18,6 +18,11 @@ output "dynamodb_table" {
   value       = aws_dynamodb_table.main.name
 }
 
+output "frontend_bucket" {
+  description = "S3 bucket name untuk frontend"
+  value       = aws_s3_bucket.frontend.id
+}
+
 output "backup_bucket" {
   description = "S3 bucket for DynamoDB backups"
   value       = aws_s3_bucket.backups.id

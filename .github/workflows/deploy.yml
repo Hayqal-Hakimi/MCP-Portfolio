@@ -137,7 +137,7 @@ jobs:
             -X POST "$API_URL/api/contact" \
             -H 'Content-Type: application/json' \
             -d '{"name":"CI Test","email":"ci@test.com","topic":"other","message":"Automated deploy by GitHub Actions"}')
-          if [ "$HTTP_CODE" != "200" ]; then
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
             echo "❌ API test failed (HTTP $HTTP_CODE)"
             exit 1
           fi
